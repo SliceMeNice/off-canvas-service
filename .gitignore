@@ -1,0 +1,12 @@
+.idea
+.vscode
+.vagrant
+bower_components
+node_modules
+npm-debug.log
+
+/dist/
+/sources/**/*.js
+/sources/**/*.js.map
+/sources/index.d.ts
+/typings/

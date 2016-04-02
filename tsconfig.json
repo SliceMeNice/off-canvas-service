@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "system",
+    "moduleResolution": "node",
+    "target": "es5",
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "rootDir": "./source",
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules",
+    "test",
+    "typings/main.d.ts",
+    "typings/main"
+  ]
+}

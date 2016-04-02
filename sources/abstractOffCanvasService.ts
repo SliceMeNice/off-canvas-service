@@ -1,0 +1,99 @@
+'use strict';
+
+export interface OffCanvasView {
+	id: string;
+	element: HTMLElement
+}
+
+export interface IOffCanvasService {
+	activateView( view: OffCanvasView ): void;
+	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ): void;
+	changeView( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void>;
+	dismissCurrentView(): Promise<void>;
+	fixateView( view: OffCanvasView ): void;
+	isShowingOffCanvasView( viewIdentifier?: string ): boolean;
+	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
+	setBaseView( view: OffCanvasView ): void;
+	showView( viewIdentifier: string ): void;
+}
+
+export abstract class AbstractOffCanvasService implements IOffCanvasService {
+
+	protected baseView: OffCanvasView;
+	protected registeredViews: any = {};
+	protected transitionCallbacks = new Map<string, Array<{ ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }>>();
+	protected viewStack = new Array<OffCanvasView>();
+
+
+	abstract activateView( view: OffCanvasView ): void;
+
+	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ) {
+		const id = from + '-' + to;
+
+		if ( !this.transitionCallbacks.has( id ) ) {
+			this.transitionCallbacks.set( id, [] );
+		}
+
+		this.transitionCallbacks.get( id ).push( callback );
+	}
+
+	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void>;
+
+	dismissCurrentView() {
+		if ( !this.isShowingOffCanvasView() ) {
+			return;
+		}
+
+		const prevView = this.viewStack.pop();
+		const nextView = this.viewStack[ this.viewStack.length - 1 ];
+
+		return this.changeView( prevView, nextView );
+	}
+
+	abstract fixateView( view: OffCanvasView ): void;
+
+	isShowingOffCanvasView( viewIdentifier?: string ) {
+		if ( !this.viewStack.length ) {
+			return false;
+		}
+
+		return viewIdentifier ? ( this.viewStack[ this.viewStack.length - 1 ] ).id == viewIdentifier : this.viewStack.length > 1;
+	}
+
+	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView {
+		const view = <OffCanvasView>{
+			id: viewIdentifier,
+			element : element
+		};
+
+		this.registeredViews[ viewIdentifier ] = view;
+		this.fixateView( view );
+
+		return view;
+	}
+
+	setBaseView( view: OffCanvasView ) {
+		this.baseView = view;
+		this.viewStack = [ this.baseView ];
+
+		this.activateView( this.baseView );
+	}
+
+	showView( viewIdentifier: string ) {
+		if ( viewIdentifier == this.baseView.id ) {
+			return;
+		}
+
+		const view = this.registeredViews[ viewIdentifier ];
+
+		if ( view && this.viewStack.indexOf( view ) == -1 ) {
+			this.viewStack.push( view );
+
+			const prevView = this.viewStack[ this.viewStack.length - 2 ];
+			const nextView = this.viewStack[ this.viewStack.length - 1 ];
+
+			this.changeView( prevView, nextView );
+		}
+	}
+
+}
