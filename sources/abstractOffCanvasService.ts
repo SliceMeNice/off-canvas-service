@@ -11,6 +11,7 @@ export interface IOffCanvasService {
 	changeView( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void>;
 	dismissCurrentView(): Promise<void>;
 	fixateView( view: OffCanvasView ): void;
+	getRegisteredViews(): Array<OffCanvasView>;
 	isShowingOffCanvasView( viewIdentifier?: string ): boolean;
 	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
 	setBaseView( view: OffCanvasView ): void;
@@ -20,7 +21,7 @@ export interface IOffCanvasService {
 export abstract class AbstractOffCanvasService implements IOffCanvasService {
 
 	protected baseView: OffCanvasView;
-	protected registeredViews: any = {};
+	protected registeredViews = new Map<string, OffCanvasView>();
 	protected transitionCallbacks = new Map<string, Array<{ ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }>>();
 	protected viewStack = new Array<OffCanvasView>();
 
@@ -52,6 +53,10 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 
 	abstract fixateView( view: OffCanvasView ): void;
 
+	getRegisteredViews() {
+		return Array.from( this.registeredViews.values() );
+	}
+
 	isShowingOffCanvasView( viewIdentifier?: string ) {
 		if ( !this.viewStack.length ) {
 			return false;
@@ -66,7 +71,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 			element : element
 		};
 
-		this.registeredViews[ viewIdentifier ] = view;
+		this.registeredViews.set( viewIdentifier, view );
 		this.fixateView( view );
 
 		return view;
@@ -84,7 +89,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 			return;
 		}
 
-		const view = this.registeredViews[ viewIdentifier ];
+		const view = this.registeredViews.get( viewIdentifier );
 
 		if ( view && this.viewStack.indexOf( view ) == -1 ) {
 			this.viewStack.push( view );
