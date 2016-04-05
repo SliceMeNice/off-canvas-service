@@ -9,7 +9,7 @@
 
     var AbstractOffCanvasService = (function () {
         function AbstractOffCanvasService() {
-            this.registeredViews = {};
+            this.registeredViews = new Map();
             this.transitionCallbacks = new Map();
             this.viewStack = new Array();
         }
@@ -28,6 +28,9 @@
             var nextView = this.viewStack[this.viewStack.length - 1];
             return this.changeView(prevView, nextView);
         };
+        AbstractOffCanvasService.prototype.getRegisteredViews = function () {
+            return Array.from(this.registeredViews.values());
+        };
         AbstractOffCanvasService.prototype.isShowingOffCanvasView = function (viewIdentifier) {
             if (!this.viewStack.length) {
                 return false;
@@ -39,7 +42,7 @@
                 id: viewIdentifier,
                 element: element
             };
-            this.registeredViews[viewIdentifier] = view;
+            this.registeredViews.set(viewIdentifier, view);
             this.fixateView(view);
             return view;
         };
@@ -52,7 +55,7 @@
             if (viewIdentifier == this.baseView.id) {
                 return;
             }
-            var view = this.registeredViews[viewIdentifier];
+            var view = this.registeredViews.get(viewIdentifier);
             if (view && this.viewStack.indexOf(view) == -1) {
                 this.viewStack.push(view);
                 var prevView = this.viewStack[this.viewStack.length - 2];
