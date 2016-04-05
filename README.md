@@ -5,3 +5,13 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/SliceMeNice/off-canvas-service/master/LICENSE.txt)
 
 > A lightweight service that manages off-canvas views. The top view always defines the dimensions of the body element.
+
+## Release History
+
+__1.1.0__
+
+  * Added method `getRegisteredViews` in order to allow updating styles (min-width, min-height) whenever the viewport resizes.
+
+__1.0.0__
+
+  * Added basic version of the service.

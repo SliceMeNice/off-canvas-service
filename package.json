@@ -1,6 +1,6 @@
 {
   "name": "@slicemenice/off-canvas-service",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A lightweight service that manages off-canvas views. The top view always defines the dimensions of the body element.",
   "keywords": [
     "off-canvas",
@@ -8,7 +8,7 @@
     "dialog"
   ],
   "scripts": {
-    "build:dist": "rollup -c rollup.config.js && uglifyjs ./dist/offCanvasService.js --output ./dist/offCanvasService.min.js --compress --mangle && uglifyjs ./dist/offCanvasService.js --output ./dist/offCanvasService.compressed.js --compress",
+    "build:dist": "rollup -c rollup.config.js && uglifyjs ./dist/offCanvasService.js --output ./dist/offCanvasService.min.js --compress --mangle",
     "postinstall": "npm run typings:install",
     "release-to-branch": "branch-release -s build:dist",
     "test": "echo \"Tests should be here\" && exit 0",
