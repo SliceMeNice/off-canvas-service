@@ -1,6 +1,6 @@
 {
   "name": "@slicemenice/off-canvas-service",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A lightweight service that manages off-canvas views. The top view always defines the dimensions of the body element.",
   "keywords": [
     "off-canvas",
