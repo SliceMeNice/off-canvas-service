@@ -8,6 +8,10 @@
 
 ## Release History
 
+__1.2.0__
+
+  * Renamed `isShowingOffCanvasView` to `isShowingView`.
+
 __1.1.1__
 
   * Fixed cross-browser issues when determining the viewport's scrollLeft / scrollTop value.
