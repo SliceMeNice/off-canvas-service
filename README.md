@@ -8,6 +8,10 @@
 
 ## Release History
 
+__1.1.1__
+
+  * Fixed cross-browser issues when determining the viewport's scrollLeft / scrollTop value.
+
 __1.1.0__
 
   * Added method `getRegisteredViews` in order to allow updating styles (min-width, min-height) whenever the viewport resizes.

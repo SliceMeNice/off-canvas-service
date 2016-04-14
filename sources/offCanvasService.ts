@@ -37,18 +37,22 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 
 		// get the scrollTop value of the next view, so that we can set it as the body's scrollTop value later.
 		// Also, reset the scrollTop of the next view to 0.
+		var nextViewScrollLeft = nextView.element.scrollLeft;
 		var nextViewScrollTop = nextView.element.scrollTop;
+		nextView.element.scrollLeft = 0;
 		nextView.element.scrollTop = 0;
 
 		// After fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
 		// this position, when the view will be re-activated.
-		var bodyScrollTop = document.body.scrollTop;
+		var bodyScrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft;
+		var bodyScrollTop = document.body.scrollTop || document.documentElement.scrollTop;
 
 		this.activateView( nextView );
 		this.fixateView( prevView );
 
+		prevView.element.scrollLeft = bodyScrollLeft;
 		prevView.element.scrollTop = bodyScrollTop;
-		document.body.scrollTop = nextViewScrollTop;
+		window.scrollTo( nextViewScrollLeft, nextViewScrollTop );
 
 		// collect all callback functions, i.e. also those that have been registered using wildcards
 		var callbacks = new Array<{ ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }>();
