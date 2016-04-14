@@ -21,7 +21,7 @@
             this.transitionCallbacks.get(id).push(callback);
         };
         AbstractOffCanvasService.prototype.dismissCurrentView = function () {
-            if (!this.isShowingOffCanvasView()) {
+            if (!this.isShowingView()) {
                 return;
             }
             var prevView = this.viewStack.pop();
@@ -31,7 +31,7 @@
         AbstractOffCanvasService.prototype.getRegisteredViews = function () {
             return Array.from(this.registeredViews.values());
         };
-        AbstractOffCanvasService.prototype.isShowingOffCanvasView = function (viewIdentifier) {
+        AbstractOffCanvasService.prototype.isShowingView = function (viewIdentifier) {
             if (!this.viewStack.length) {
                 return false;
             }
