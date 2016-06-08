@@ -8,6 +8,10 @@
 
 ## Release History
 
+__1.3.0__
+
+  * Moved activation of the next view to the end of the view transitions.
+
 __1.2.0__
 
   * Renamed `isShowingOffCanvasView` to `isShowingView`.
