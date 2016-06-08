@@ -92,17 +92,13 @@
             // Also, reset the scrollTop of the next view to 0.
             var nextViewScrollLeft = nextView.element.scrollLeft;
             var nextViewScrollTop = nextView.element.scrollTop;
-            nextView.element.scrollLeft = 0;
-            nextView.element.scrollTop = 0;
             // After fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
             // this position, when the view will be re-activated.
             var bodyScrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft;
             var bodyScrollTop = document.body.scrollTop || document.documentElement.scrollTop;
-            this.activateView(nextView);
             this.fixateView(prevView);
             prevView.element.scrollLeft = bodyScrollLeft;
             prevView.element.scrollTop = bodyScrollTop;
-            window.scrollTo(nextViewScrollLeft, nextViewScrollTop);
             // collect all callback functions, i.e. also those that have been registered using wildcards
             var callbacks = new Array();
             function collectTransitionCallbacks(transitionId) {
@@ -118,13 +114,21 @@
             callbacks.forEach(function (callback) {
                 promises.push(callback.apply(service, callbackArguments));
             });
+            function onTransitionEnd() {
+                nextView.element.scrollLeft = 0;
+                nextView.element.scrollTop = 0;
+                service.activateView(nextView);
+                window.scrollTo(nextViewScrollLeft, nextViewScrollTop);
+            }
             var promise = new Promise(function (resolve, reject) {
                 if (promises.length) {
                     Promise.all(promises).then(function () {
+                        onTransitionEnd();
                         resolve();
                     });
                 }
                 else {
+                    onTransitionEnd();
                     resolve();
                 }
             });
