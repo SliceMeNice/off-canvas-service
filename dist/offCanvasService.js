@@ -20,13 +20,14 @@
             }
             this.transitionCallbacks.get(id).push(callback);
         };
-        AbstractOffCanvasService.prototype.dismissCurrentView = function () {
+        AbstractOffCanvasService.prototype.dismissCurrentView = function (skipTransitions) {
+            if (skipTransitions === void 0) { skipTransitions = false; }
             if (!this.viewStack.length) {
                 return;
             }
             var prevView = this.viewStack.pop();
             var nextView = this.viewStack[this.viewStack.length - 1];
-            return this.changeView(prevView, nextView, false);
+            return this.changeView(prevView, nextView, false, skipTransitions);
         };
         AbstractOffCanvasService.prototype.getRegisteredViews = function () {
             return Array.from(this.registeredViews.values());
@@ -57,12 +58,13 @@
             this.fixateView(view);
             return view;
         };
-        AbstractOffCanvasService.prototype.replaceCurrentViewWith = function (viewIdentifier) {
+        AbstractOffCanvasService.prototype.replaceCurrentViewWith = function (viewIdentifier, skipTransitions) {
+            if (skipTransitions === void 0) { skipTransitions = false; }
             var newView = this.registeredViews.get(viewIdentifier);
             if (newView && this.viewStack.indexOf(newView) === -1) {
                 var currentView = this.viewStack.pop();
                 this.viewStack.push(newView);
-                this.changeView(currentView, newView, true);
+                this.changeView(currentView, newView, true, skipTransitions);
             }
         };
         AbstractOffCanvasService.prototype.setBaseView = function (view) {
@@ -70,7 +72,8 @@
             this.viewStack = [this.baseView];
             this.activateView(this.baseView);
         };
-        AbstractOffCanvasService.prototype.showView = function (viewIdentifier) {
+        AbstractOffCanvasService.prototype.showView = function (viewIdentifier, skipTransitions) {
+            if (skipTransitions === void 0) { skipTransitions = false; }
             if (viewIdentifier === this.baseView.id) {
                 return;
             }
@@ -79,7 +82,7 @@
                 this.viewStack.push(view);
                 var prevView = this.viewStack[this.viewStack.length - 2];
                 var nextView = this.viewStack[this.viewStack.length - 1];
-                this.changeView(prevView, nextView, false);
+                this.changeView(prevView, nextView, false, skipTransitions);
             }
         };
         return AbstractOffCanvasService;
@@ -102,7 +105,7 @@
             style.top = '';
             style.width = '';
         };
-        OffCanvasService.prototype.changeView = function (prevView, nextView, replace) {
+        OffCanvasService.prototype.changeView = function (prevView, nextView, replace, skipTransitions) {
             var service = this;
             // When showing an off canvas view, the view should become the new main view, so that native UI controls on
             // mobile devices behave exactly the same (become smaller, when scrolling down) as they would for the base view.
@@ -144,9 +147,11 @@
             }
             var callbackArguments = [prevView, nextView];
             var promises = new Array();
-            callbacks.forEach(function (callback) {
-                promises.push(callback.apply(service, callbackArguments));
-            });
+            if (skipTransitions === false) {
+                callbacks.forEach(function (callback) {
+                    promises.push(callback.apply(service, callbackArguments));
+                });
+            }
             function onTransitionEnd() {
                 nextView.element.scrollLeft = 0;
                 nextView.element.scrollTop = 0;
