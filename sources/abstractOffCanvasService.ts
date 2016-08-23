@@ -8,7 +8,7 @@ export interface OffCanvasView {
 export interface IOffCanvasService {
 	activateView( view: OffCanvasView ): void;
 	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ): void;
-	changeView( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void>;
+	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ): Promise<void>;
 	dismissCurrentView(): Promise<void>;
 	fixateView( view: OffCanvasView ): void;
 	getRegisteredViews(): Array<OffCanvasView>;
@@ -38,7 +38,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		this.transitionCallbacks.get( id ).push( callback );
 	}
 
-	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void>;
+	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ): Promise<void>;
 
 	dismissCurrentView() {
 		if ( !this.isShowingView() ) {
@@ -48,7 +48,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		const prevView = this.viewStack.pop();
 		const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
-		return this.changeView( prevView, nextView );
+		return this.changeView( prevView, nextView, false );
 	}
 
 	abstract fixateView( view: OffCanvasView ): void;
@@ -97,7 +97,18 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 			const prevView = this.viewStack[ this.viewStack.length - 2 ];
 			const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
-			this.changeView( prevView, nextView );
+			this.changeView( prevView, nextView, false );
+		}
+	}
+
+	replaceCurrentViewWith( viewIdentifier: string ) {
+		const newView = this.registeredViews.get( viewIdentifier );
+
+		if ( newView && this.viewStack.indexOf( newView ) == -1 ) {
+			const currentView = this.viewStack.pop();
+			this.viewStack.push( newView );
+
+			this.changeView( currentView, newView, true );
 		}
 	}
 

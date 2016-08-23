@@ -8,6 +8,10 @@
 
 ## Release History
 
+__1.4.0__
+
+  * Added new method "replaceCurrentViewWith" that can replace the current top view.
+
 __1.3.0__
 
   * Moved activation of the next view to the end of the view transitions.
