@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.1.0__
+
+  * Added skipTransitions parameter to "showView", "replaceCurrentViewWith" and "dismissCurrentView".
+
 __2.0.0__
 
   * Renamed "isShowingView" to "isTopmostView", and refactored "isShowingView" to return true, if some view on the stack matches the given identifier.

@@ -8,15 +8,15 @@ export interface OffCanvasView {
 export interface IOffCanvasService {
 	activateView( view: OffCanvasView ): void;
 	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ): void;
-	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ): Promise<void>;
-	dismissCurrentView(): Promise<void>;
+	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ): Promise<void>;
+	dismissCurrentView( skipTransitions: boolean ): Promise<void>;
 	fixateView( view: OffCanvasView ): void;
 	getRegisteredViews(): Array<OffCanvasView>;
 	isShowingView( viewIdentifier?: string ): boolean;
 	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
-	replaceCurrentViewWith( viewIdentifier: string ): void;
+	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean ): void;
 	setBaseView( view: OffCanvasView ): void;
-	showView( viewIdentifier: string ): void;
+	showView( viewIdentifier: string, skipTransitions: boolean ): void;
 }
 
 export abstract class AbstractOffCanvasService implements IOffCanvasService {
@@ -39,9 +39,9 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		this.transitionCallbacks.get( id ).push( callback );
 	}
 
-	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ): Promise<void>;
+	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ): Promise<void>;
 
-	dismissCurrentView() {
+	dismissCurrentView( skipTransitions: boolean = false ) {
 		if ( !this.viewStack.length ) {
 			return;
 		}
@@ -49,7 +49,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		const prevView = this.viewStack.pop();
 		const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
-		return this.changeView( prevView, nextView, false );
+		return this.changeView( prevView, nextView, false, skipTransitions );
 	}
 
 	abstract fixateView( view: OffCanvasView ): void;
@@ -92,14 +92,14 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		return view;
 	}
 
-	replaceCurrentViewWith( viewIdentifier: string ) {
+	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean = false ) {
 		const newView = this.registeredViews.get( viewIdentifier );
 
 		if ( newView && this.viewStack.indexOf( newView ) === -1 ) {
 			const currentView = this.viewStack.pop();
 			this.viewStack.push( newView );
 
-			this.changeView( currentView, newView, true );
+			this.changeView( currentView, newView, true, skipTransitions );
 		}
 	}
 
@@ -110,7 +110,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		this.activateView( this.baseView );
 	}
 
-	showView( viewIdentifier: string ) {
+	showView( viewIdentifier: string, skipTransitions: boolean = false ) {
 		if ( viewIdentifier === this.baseView.id ) {
 			return;
 		}
@@ -123,7 +123,7 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 			const prevView = this.viewStack[ this.viewStack.length - 2 ];
 			const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
-			this.changeView( prevView, nextView, false );
+			this.changeView( prevView, nextView, false, skipTransitions );
 		}
 	}
 
