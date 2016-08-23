@@ -21,12 +21,12 @@
             this.transitionCallbacks.get(id).push(callback);
         };
         AbstractOffCanvasService.prototype.dismissCurrentView = function () {
-            if (!this.isShowingView()) {
+            if (!this.viewStack.length) {
                 return;
             }
             var prevView = this.viewStack.pop();
             var nextView = this.viewStack[this.viewStack.length - 1];
-            return this.changeView(prevView, nextView);
+            return this.changeView(prevView, nextView, false);
         };
         AbstractOffCanvasService.prototype.getRegisteredViews = function () {
             return Array.from(this.registeredViews.values());
@@ -35,7 +35,18 @@
             if (!this.viewStack.length) {
                 return false;
             }
-            return viewIdentifier ? (this.viewStack[this.viewStack.length - 1]).id == viewIdentifier : this.viewStack.length > 1;
+            if (!viewIdentifier) {
+                return this.viewStack.length > 1;
+            }
+            return this.viewStack.some(function (view) {
+                return view.id === viewIdentifier;
+            });
+        };
+        AbstractOffCanvasService.prototype.isTopmostView = function (viewIdentifier) {
+            if (!this.viewStack.length) {
+                return false;
+            }
+            return this.viewStack[this.viewStack.length - 1].id === viewIdentifier;
         };
         AbstractOffCanvasService.prototype.registerView = function (viewIdentifier, element) {
             var view = {
@@ -46,21 +57,29 @@
             this.fixateView(view);
             return view;
         };
+        AbstractOffCanvasService.prototype.replaceCurrentViewWith = function (viewIdentifier) {
+            var newView = this.registeredViews.get(viewIdentifier);
+            if (newView && this.viewStack.indexOf(newView) === -1) {
+                var currentView = this.viewStack.pop();
+                this.viewStack.push(newView);
+                this.changeView(currentView, newView, true);
+            }
+        };
         AbstractOffCanvasService.prototype.setBaseView = function (view) {
             this.baseView = view;
             this.viewStack = [this.baseView];
             this.activateView(this.baseView);
         };
         AbstractOffCanvasService.prototype.showView = function (viewIdentifier) {
-            if (viewIdentifier == this.baseView.id) {
+            if (viewIdentifier === this.baseView.id) {
                 return;
             }
             var view = this.registeredViews.get(viewIdentifier);
-            if (view && this.viewStack.indexOf(view) == -1) {
+            if (view && this.viewStack.indexOf(view) === -1) {
                 this.viewStack.push(view);
                 var prevView = this.viewStack[this.viewStack.length - 2];
                 var nextView = this.viewStack[this.viewStack.length - 1];
-                this.changeView(prevView, nextView);
+                this.changeView(prevView, nextView, false);
             }
         };
         return AbstractOffCanvasService;
@@ -83,7 +102,7 @@
             style.top = '';
             style.width = '';
         };
-        OffCanvasService.prototype.changeView = function (prevView, nextView) {
+        OffCanvasService.prototype.changeView = function (prevView, nextView, replace) {
             var service = this;
             // When showing an off canvas view, the view should become the new main view, so that native UI controls on
             // mobile devices behave exactly the same (become smaller, when scrolling down) as they would for the base view.
@@ -106,9 +125,23 @@
                     callbacks = callbacks.concat(service.transitionCallbacks.get(transitionId));
                 }
             }
-            collectTransitionCallbacks(prevView.id + '-' + nextView.id);
-            collectTransitionCallbacks('*-' + nextView.id);
-            collectTransitionCallbacks(prevView.id + '-*');
+            if (replace === false) {
+                collectTransitionCallbacks(prevView.id + '-' + nextView.id);
+                collectTransitionCallbacks('*-' + nextView.id);
+                collectTransitionCallbacks(prevView.id + '-*');
+            }
+            else {
+                var intermediateView = this.viewStack[this.viewStack.length - 2];
+                // first check for direct transition callbacks
+                collectTransitionCallbacks(prevView.id + '-' + nextView.id);
+                if (!callbacks.length) {
+                    // if there are no direct transition callbacks, then we use the transition callbacks that uses the intermediate view
+                    collectTransitionCallbacks(prevView.id + '-' + intermediateView.id);
+                    collectTransitionCallbacks(prevView.id + '-*');
+                    collectTransitionCallbacks(intermediateView.id + '-' + nextView.id);
+                    collectTransitionCallbacks('*-' + nextView.id);
+                }
+            }
             var callbackArguments = [prevView, nextView];
             var promises = new Array();
             callbacks.forEach(function (callback) {
