@@ -11,6 +11,7 @@ export interface IOffCanvasService {
 	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ): Promise<void>;
 	dismissCurrentView( skipTransitions: boolean ): Promise<void>;
 	fixateView( view: OffCanvasView ): void;
+	getNumberOfViewsOnViewstack(): number;
 	getRegisteredViews(): Array<OffCanvasView>;
 	isShowingView( viewIdentifier?: string ): boolean;
 	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
@@ -53,6 +54,10 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 	}
 
 	abstract fixateView( view: OffCanvasView ): void;
+
+	getNumberOfViewsOnViewstack() {
+		return this.viewStack.length;
+	}
 
 	getRegisteredViews() {
 		return Array.from( this.registeredViews.values() );
