@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.2.0__
+
+  * Added new method "getNumberOfViewsOnViewstack".
+
 __2.1.0__
 
   * Added skipTransitions parameter to "showView", "replaceCurrentViewWith" and "dismissCurrentView".
