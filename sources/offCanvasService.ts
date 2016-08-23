@@ -27,7 +27,7 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 		style.width = '';
 	}
 
-	changeView( prevView: OffCanvasView, nextView: OffCanvasView ) {
+	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ) {
 		const service = this;
 
 		// When showing an off canvas view, the view should become the new main view, so that native UI controls on
@@ -59,9 +59,26 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 			}
 		}
 
-		collectTransitionCallbacks( prevView.id + '-' + nextView.id );
-		collectTransitionCallbacks( '*-' + nextView.id );
-		collectTransitionCallbacks( prevView.id + '-*' );
+		if ( replace === false ) {
+			collectTransitionCallbacks( prevView.id + '-' + nextView.id );
+			collectTransitionCallbacks( '*-' + nextView.id );
+			collectTransitionCallbacks( prevView.id + '-*' );
+		} else {
+			const intermediateView = this.viewStack[ this.viewStack.length - 2 ];
+
+			// first check for direct transition callbacks
+			collectTransitionCallbacks( prevView.id + '-' + nextView.id );
+
+			if ( !callbacks.length ) {
+				// if there are no direct transition callbacks, then we use the transition callbacks that uses the intermediate view
+				collectTransitionCallbacks( prevView.id + '-' + intermediateView.id );
+				collectTransitionCallbacks( prevView.id + '-*' );
+
+				collectTransitionCallbacks( intermediateView.id + '-' + nextView.id );
+				collectTransitionCallbacks( '*-' + nextView.id );
+			}
+		}
+		
 
 		const callbackArguments = [ prevView, nextView ];
 
