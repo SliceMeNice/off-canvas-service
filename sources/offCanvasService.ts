@@ -27,7 +27,7 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 		style.width = '';
 	}
 
-	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean ) {
+	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ) {
 		const service = this;
 
 		// When showing an off canvas view, the view should become the new main view, so that native UI controls on
@@ -84,9 +84,11 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 
 		const promises = new Array<Promise<void>>();
 
-		callbacks.forEach( ( callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ) => {
-			promises.push( callback.apply( service, callbackArguments ) );
-		} );
+		if ( skipTransitions === false ) {
+			callbacks.forEach( ( callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ) => {
+				promises.push( callback.apply( service, callbackArguments ) );
+			} );
+		}
 
 		function onTransitionEnd() {
 			nextView.element.scrollLeft = 0;
