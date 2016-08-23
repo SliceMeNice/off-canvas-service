@@ -14,6 +14,7 @@ export interface IOffCanvasService {
 	getRegisteredViews(): Array<OffCanvasView>;
 	isShowingView( viewIdentifier?: string ): boolean;
 	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
+	replaceCurrentViewWith( viewIdentifier: string ): void;
 	setBaseView( view: OffCanvasView ): void;
 	showView( viewIdentifier: string ): void;
 }
@@ -77,6 +78,17 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 		return view;
 	}
 
+	replaceCurrentViewWith( viewIdentifier: string ) {
+		const newView = this.registeredViews.get( viewIdentifier );
+
+		if ( newView && this.viewStack.indexOf( newView ) == -1 ) {
+			const currentView = this.viewStack.pop();
+			this.viewStack.push( newView );
+
+			this.changeView( currentView, newView, true );
+		}
+	}
+
 	setBaseView( view: OffCanvasView ) {
 		this.baseView = view;
 		this.viewStack = [ this.baseView ];
@@ -98,17 +110,6 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 			const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
 			this.changeView( prevView, nextView, false );
-		}
-	}
-
-	replaceCurrentViewWith( viewIdentifier: string ) {
-		const newView = this.registeredViews.get( viewIdentifier );
-
-		if ( newView && this.viewStack.indexOf( newView ) == -1 ) {
-			const currentView = this.viewStack.pop();
-			this.viewStack.push( newView );
-
-			this.changeView( currentView, newView, true );
 		}
 	}
 
