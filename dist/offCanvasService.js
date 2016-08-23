@@ -29,6 +29,9 @@
             var nextView = this.viewStack[this.viewStack.length - 1];
             return this.changeView(prevView, nextView, false, skipTransitions);
         };
+        AbstractOffCanvasService.prototype.getNumberOfViewsOnViewstack = function () {
+            return this.viewStack.length;
+        };
         AbstractOffCanvasService.prototype.getRegisteredViews = function () {
             return Array.from(this.registeredViews.values());
         };
