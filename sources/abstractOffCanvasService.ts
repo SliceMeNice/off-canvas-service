@@ -18,6 +18,7 @@ export interface IOffCanvasService {
 	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean ): void;
 	setBaseView( view: OffCanvasView ): void;
 	showView( viewIdentifier: string, skipTransitions: boolean ): void;
+	unregisterView( viewIdentifier: string ): void;
 }
 
 export abstract class AbstractOffCanvasService implements IOffCanvasService {
@@ -130,6 +131,10 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 
 			this.changeView( prevView, nextView, false, skipTransitions );
 		}
+	}
+
+	unregisterView( viewIdentifier: string ): void {
+		this.registeredViews.delete( viewIdentifier );
 	}
 
 }
