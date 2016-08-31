@@ -88,6 +88,9 @@
                 this.changeView(prevView, nextView, false, skipTransitions);
             }
         };
+        AbstractOffCanvasService.prototype.unregisterView = function (viewIdentifier) {
+            this.registeredViews.delete(viewIdentifier);
+        };
         return AbstractOffCanvasService;
     }());
 
