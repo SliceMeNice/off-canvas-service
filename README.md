@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.3.0__
+
+  * Added new method "unregisterView".
+
 __2.2.0__
 
   * Added new method "getNumberOfViewsOnViewstack".
