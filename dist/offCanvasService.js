@@ -13,12 +13,15 @@
             this.transitionCallbacks = new Map();
             this.viewStack = new Array();
         }
-        AbstractOffCanvasService.prototype.addTransitionCallback = function (from, to, callback) {
+        AbstractOffCanvasService.prototype.addTransitionCallback = function (from, to, transitionCallback, skipOrCleanupCallback) {
             var id = from + '-' + to;
             if (!this.transitionCallbacks.has(id)) {
                 this.transitionCallbacks.set(id, []);
             }
-            this.transitionCallbacks.get(id).push(callback);
+            this.transitionCallbacks.get(id).push({
+                transitionCallback: transitionCallback,
+                skipOrCleanupCallback: skipOrCleanupCallback
+            });
         };
         AbstractOffCanvasService.prototype.dismissCurrentView = function (skipTransitions) {
             if (skipTransitions === void 0) { skipTransitions = false; }
@@ -154,11 +157,16 @@
             var callbackArguments = [prevView, nextView];
             var promises = new Array();
             if (skipTransitions === false) {
-                callbacks.forEach(function (callback) {
-                    promises.push(callback.apply(service, callbackArguments));
+                callbacks.forEach(function (transitionCallback) {
+                    promises.push(transitionCallback.transitionCallback.apply(service, callbackArguments));
                 });
             }
             function onTransitionEnd() {
+                callbacks.forEach(function (transitionCallback) {
+                    if (transitionCallback.skipOrCleanupCallback) {
+                        transitionCallback.skipOrCleanupCallback.apply(service, callbackArguments);
+                    }
+                });
                 nextView.element.scrollLeft = 0;
                 nextView.element.scrollTop = 0;
                 service.activateView(nextView);
