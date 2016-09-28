@@ -7,7 +7,7 @@ export interface OffCanvasView {
 
 export interface IOffCanvasService {
 	activateView( view: OffCanvasView ): void;
-	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ): void;
+	addTransitionCallback( from: string, to: string, transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback?: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } ): void;
 	changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ): Promise<void>;
 	dismissCurrentView( skipTransitions: boolean ): Promise<void>;
 	fixateView( view: OffCanvasView ): void;
@@ -25,20 +25,23 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 
 	protected baseView: OffCanvasView;
 	protected registeredViews = new Map<string, OffCanvasView>();
-	protected transitionCallbacks = new Map<string, Array<{ ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }>>();
+	protected transitionCallbacks = new Map<string, Array<{ transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } }>>();
 	protected viewStack = new Array<OffCanvasView>();
 
 
 	abstract activateView( view: OffCanvasView ): void;
 
-	addTransitionCallback( from: string, to: string, callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ) {
+	addTransitionCallback( from: string, to: string, transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback?: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } ) {
 		const id = from + '-' + to;
 
 		if ( !this.transitionCallbacks.has( id ) ) {
 			this.transitionCallbacks.set( id, [] );
 		}
 
-		this.transitionCallbacks.get( id ).push( callback );
+		this.transitionCallbacks.get( id ).push( {
+			transitionCallback: transitionCallback,
+			skipOrCleanupCallback: skipOrCleanupCallback
+		} );
 	}
 
 	abstract changeView( prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean ): Promise<void>;

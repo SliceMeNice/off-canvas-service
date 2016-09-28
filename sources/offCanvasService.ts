@@ -51,7 +51,7 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 		prevView.element.scrollTop = bodyScrollTop;
 
 		// collect all callback functions, i.e. also those that have been registered using wildcards
-		var callbacks = new Array<{ ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }>();
+		var callbacks = new Array<{ transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } }>();
 
 		function collectTransitionCallbacks( transitionId: string ) {
 			if ( service.transitionCallbacks.has( transitionId ) ) {
@@ -85,12 +85,18 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 		const promises = new Array<Promise<void>>();
 
 		if ( skipTransitions === false ) {
-			callbacks.forEach( ( callback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> } ) => {
-				promises.push( callback.apply( service, callbackArguments ) );
+			callbacks.forEach( ( transitionCallback ) => {
+				promises.push( transitionCallback.transitionCallback.apply( service, callbackArguments ) );
 			} );
 		}
 
 		function onTransitionEnd() {
+			callbacks.forEach( ( transitionCallback ) => {
+				if ( transitionCallback.skipOrCleanupCallback ) {
+					transitionCallback.skipOrCleanupCallback.apply( service, callbackArguments );
+				}
+			} );
+
 			nextView.element.scrollLeft = 0;
 			nextView.element.scrollTop = 0;
 			service.activateView(nextView);
