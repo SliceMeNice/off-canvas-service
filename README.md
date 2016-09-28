@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.4.0__
+
+  * Added optional "skipOrCleanupCallback" parameter to the "addTransitionCallback" method that will automatically be called when a transition has finished or has been skipped.
+
 __2.3.0__
 
   * Added new method "unregisterView".
