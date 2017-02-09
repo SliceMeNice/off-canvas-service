@@ -16,9 +16,9 @@ export interface IOffCanvasService {
     getRegisteredViews(): Array<OffCanvasView>;
     isShowingView(viewIdentifier?: string): boolean;
     registerView(viewIdentifier: string, element: HTMLElement): OffCanvasView;
-    replaceCurrentViewWith(viewIdentifier: string, skipTransitions: boolean): void;
+    replaceCurrentViewWith(viewIdentifier: string, skipTransitions: boolean): Promise<void>;
     setBaseView(view: OffCanvasView): void;
-    showView(viewIdentifier: string, skipTransitions: boolean): void;
+    showView(viewIdentifier: string, skipTransitions: boolean): Promise<void>;
     unregisterView(viewIdentifier: string): void;
 }
 export declare abstract class AbstractOffCanvasService implements IOffCanvasService {
@@ -43,8 +43,8 @@ export declare abstract class AbstractOffCanvasService implements IOffCanvasServ
     isShowingView(viewIdentifier?: string): boolean;
     isTopmostView(viewIdentifier: string): boolean;
     registerView(viewIdentifier: string, element: HTMLElement): OffCanvasView;
-    replaceCurrentViewWith(viewIdentifier: string, skipTransitions?: boolean): void;
+    replaceCurrentViewWith(viewIdentifier: string, skipTransitions?: boolean): Promise<void>;
     setBaseView(view: OffCanvasView): void;
-    showView(viewIdentifier: string, skipTransitions?: boolean): void;
+    showView(viewIdentifier: string, skipTransitions?: boolean): Promise<void>;
     unregisterView(viewIdentifier: string): void;
 }
