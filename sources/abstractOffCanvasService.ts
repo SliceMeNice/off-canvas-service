@@ -15,9 +15,9 @@ export interface IOffCanvasService {
 	getRegisteredViews(): Array<OffCanvasView>;
 	isShowingView( viewIdentifier?: string ): boolean;
 	registerView( viewIdentifier: string, element: HTMLElement ): OffCanvasView;
-	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean ): void;
+	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean ): Promise<void>;
 	setBaseView( view: OffCanvasView ): void;
-	showView( viewIdentifier: string, skipTransitions: boolean ): void;
+	showView( viewIdentifier: string, skipTransitions: boolean ): Promise<void>;
 	unregisterView( viewIdentifier: string ): void;
 }
 
@@ -104,12 +104,18 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 	replaceCurrentViewWith( viewIdentifier: string, skipTransitions: boolean = false ) {
 		const newView = this.registeredViews.get( viewIdentifier );
 
-		if ( newView && this.viewStack.indexOf( newView ) === -1 ) {
-			const currentView = this.viewStack.pop();
-			this.viewStack.push( newView );
+		if ( newView ) {
+			if ( this.viewStack.indexOf( newView ) === -1 ) {
+				const currentView = this.viewStack.pop();
+				this.viewStack.push( newView );
 
-			this.changeView( currentView, newView, true, skipTransitions );
+				return this.changeView( currentView, newView, true, skipTransitions );
+			} else {
+				return Promise.reject( 'The view "' + viewIdentifier + '" is already being shown.' );
+			}
 		}
+
+		return Promise.reject( 'Unknown view "' + viewIdentifier + '".' );
 	}
 
 	setBaseView( view: OffCanvasView ) {
@@ -126,14 +132,20 @@ export abstract class AbstractOffCanvasService implements IOffCanvasService {
 
 		const view = this.registeredViews.get( viewIdentifier );
 
-		if ( view && this.viewStack.indexOf( view ) === -1 ) {
-			this.viewStack.push( view );
+		if ( view ) {
+			if ( this.viewStack.indexOf( view ) === -1 ) {
+				this.viewStack.push( view );
 
-			const prevView = this.viewStack[ this.viewStack.length - 2 ];
-			const nextView = this.viewStack[ this.viewStack.length - 1 ];
+				const prevView = this.viewStack[ this.viewStack.length - 2 ];
+				const nextView = this.viewStack[ this.viewStack.length - 1 ];
 
-			this.changeView( prevView, nextView, false, skipTransitions );
+				return this.changeView( prevView, nextView, false, skipTransitions );
+			} else {
+				return Promise.reject( 'The view "' + viewIdentifier + '" is already being shown.' );
+			}
 		}
+
+		return Promise.reject( 'Unknown view "' + viewIdentifier + '".' );
 	}
 
 	unregisterView( viewIdentifier: string ): void {

@@ -2,6 +2,6 @@ import { AbstractOffCanvasService, IOffCanvasService, OffCanvasView } from './ab
 export { IOffCanvasService, OffCanvasView } from './abstractOffCanvasService';
 export declare class OffCanvasService extends AbstractOffCanvasService implements IOffCanvasService {
     activateView(view: OffCanvasView): void;
-    changeView(prevView: OffCanvasView, nextView: OffCanvasView): Promise<void>;
+    changeView(prevView: OffCanvasView, nextView: OffCanvasView, replace: boolean, skipTransitions: boolean): Promise<void>;
     fixateView(view: OffCanvasView): void;
 }

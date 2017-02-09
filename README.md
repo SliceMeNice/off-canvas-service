@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.5.0__
+
+  * The methods "showView" and "replaceCurrentViewWith" now return a promise.
+
 __2.4.0__
 
   * Added optional "skipOrCleanupCallback" parameter to the "addTransitionCallback" method that will automatically be called when a transition has finished or has been skipped.
