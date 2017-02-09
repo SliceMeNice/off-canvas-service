@@ -67,11 +67,17 @@
         AbstractOffCanvasService.prototype.replaceCurrentViewWith = function (viewIdentifier, skipTransitions) {
             if (skipTransitions === void 0) { skipTransitions = false; }
             var newView = this.registeredViews.get(viewIdentifier);
-            if (newView && this.viewStack.indexOf(newView) === -1) {
-                var currentView = this.viewStack.pop();
-                this.viewStack.push(newView);
-                this.changeView(currentView, newView, true, skipTransitions);
+            if (newView) {
+                if (this.viewStack.indexOf(newView) === -1) {
+                    var currentView = this.viewStack.pop();
+                    this.viewStack.push(newView);
+                    return this.changeView(currentView, newView, true, skipTransitions);
+                }
+                else {
+                    return Promise.reject('The view "' + viewIdentifier + '" is already being shown.');
+                }
             }
+            return Promise.reject('Unknown view "' + viewIdentifier + '".');
         };
         AbstractOffCanvasService.prototype.setBaseView = function (view) {
             this.baseView = view;
@@ -84,12 +90,18 @@
                 return;
             }
             var view = this.registeredViews.get(viewIdentifier);
-            if (view && this.viewStack.indexOf(view) === -1) {
-                this.viewStack.push(view);
-                var prevView = this.viewStack[this.viewStack.length - 2];
-                var nextView = this.viewStack[this.viewStack.length - 1];
-                this.changeView(prevView, nextView, false, skipTransitions);
+            if (view) {
+                if (this.viewStack.indexOf(view) === -1) {
+                    this.viewStack.push(view);
+                    var prevView = this.viewStack[this.viewStack.length - 2];
+                    var nextView = this.viewStack[this.viewStack.length - 1];
+                    return this.changeView(prevView, nextView, false, skipTransitions);
+                }
+                else {
+                    return Promise.reject('The view "' + viewIdentifier + '" is already being shown.');
+                }
             }
+            return Promise.reject('Unknown view "' + viewIdentifier + '".');
         };
         AbstractOffCanvasService.prototype.unregisterView = function (viewIdentifier) {
             this.registeredViews.delete(viewIdentifier);
