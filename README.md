@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.6.0__
+
+  * Removed postinstall script, so the package can be installed via npm.
+
 __2.5.0__
 
   * The methods "showView" and "replaceCurrentViewWith" now return a promise.
