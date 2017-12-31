@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.6.1__
+
+  * Just a version bump as I needed to unpublish v2.6.0 from npm.
+
 __2.6.0__
 
   * Removed postinstall script, so the package can be installed via npm.
