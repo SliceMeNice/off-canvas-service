@@ -8,6 +8,10 @@
 
 ## Release History
 
+__2.6.2__
+
+  * Added "files" field to package.json, so that the "dist" directory is included when doing an "npm install".
+
 __2.6.1__
 
   * Just a version bump as I needed to unpublish v2.6.0 from npm.
