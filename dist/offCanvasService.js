@@ -1,24 +1,48 @@
-(function (exports) {
+this.SliceMeNice = this.SliceMeNice || {};
+this.SliceMeNice.OffCanvas = (function (exports) {
     'use strict';
 
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of the
+    License at http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+    MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing permissions
+    and limitations under the License.
+    ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
     function __extends(d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     }
 
-    var AbstractOffCanvasService = (function () {
+    var AbstractOffCanvasService = /** @class */ (function () {
         function AbstractOffCanvasService() {
-            this.registeredViews = new Map();
-            this.transitionCallbacks = new Map();
+            this.registeredViews = {};
+            this.transitionCallbacks = {};
             this.viewStack = new Array();
         }
         AbstractOffCanvasService.prototype.addTransitionCallback = function (from, to, transitionCallback, skipOrCleanupCallback) {
             var id = from + '-' + to;
-            if (!this.transitionCallbacks.has(id)) {
-                this.transitionCallbacks.set(id, []);
+            if (!this.transitionCallbacks.hasOwnProperty(id)) {
+                this.transitionCallbacks[id] = [];
             }
-            this.transitionCallbacks.get(id).push({
+            this.transitionCallbacks[id].push({
                 transitionCallback: transitionCallback,
                 skipOrCleanupCallback: skipOrCleanupCallback
             });
@@ -26,7 +50,7 @@
         AbstractOffCanvasService.prototype.dismissCurrentView = function (skipTransitions) {
             if (skipTransitions === void 0) { skipTransitions = false; }
             if (!this.viewStack.length) {
-                return;
+                return Promise.resolve();
             }
             var prevView = this.viewStack.pop();
             var nextView = this.viewStack[this.viewStack.length - 1];
@@ -36,7 +60,11 @@
             return this.viewStack.length;
         };
         AbstractOffCanvasService.prototype.getRegisteredViews = function () {
-            return Array.from(this.registeredViews.values());
+            var result = new Array();
+            for (var key in this.registeredViews) {
+                result.push(this.registeredViews[key]);
+            }
+            return result;
         };
         AbstractOffCanvasService.prototype.isShowingView = function (viewIdentifier) {
             if (!this.viewStack.length) {
@@ -60,15 +88,15 @@
                 id: viewIdentifier,
                 element: element
             };
-            this.registeredViews.set(viewIdentifier, view);
+            this.registeredViews[viewIdentifier] = view;
             this.fixateView(view);
             return view;
         };
         AbstractOffCanvasService.prototype.replaceCurrentViewWith = function (viewIdentifier, skipTransitions) {
             if (skipTransitions === void 0) { skipTransitions = false; }
-            var newView = this.registeredViews.get(viewIdentifier);
+            var newView = this.registeredViews[viewIdentifier];
             if (newView) {
-                if (this.viewStack.indexOf(newView) === -1) {
+                if (this.viewStack.length > 0 && this.viewStack.indexOf(newView) === -1) {
                     var currentView = this.viewStack.pop();
                     this.viewStack.push(newView);
                     return this.changeView(currentView, newView, true, skipTransitions);
@@ -86,10 +114,10 @@
         };
         AbstractOffCanvasService.prototype.showView = function (viewIdentifier, skipTransitions) {
             if (skipTransitions === void 0) { skipTransitions = false; }
-            if (viewIdentifier === this.baseView.id) {
-                return;
+            if (this.baseView && viewIdentifier === this.baseView.id) {
+                return Promise.resolve();
             }
-            var view = this.registeredViews.get(viewIdentifier);
+            var view = this.registeredViews[viewIdentifier];
             if (view) {
                 if (this.viewStack.indexOf(view) === -1) {
                     this.viewStack.push(view);
@@ -104,15 +132,15 @@
             return Promise.reject('Unknown view "' + viewIdentifier + '".');
         };
         AbstractOffCanvasService.prototype.unregisterView = function (viewIdentifier) {
-            this.registeredViews.delete(viewIdentifier);
+            delete this.registeredViews[viewIdentifier];
         };
         return AbstractOffCanvasService;
     }());
 
-    var OffCanvasService = (function (_super) {
+    var OffCanvasService = /** @class */ (function (_super) {
         __extends(OffCanvasService, _super);
         function OffCanvasService() {
-            _super.apply(this, arguments);
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         OffCanvasService.prototype.activateView = function (view) {
             var style = view.element.style;
@@ -137,16 +165,16 @@
             var nextViewScrollTop = nextView.element.scrollTop;
             // After fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
             // this position, when the view will be re-activated.
-            var bodyScrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft;
-            var bodyScrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+            var bodyScrollLeft = document.body.scrollLeft || (document.documentElement && document.documentElement.scrollLeft) || 0;
+            var bodyScrollTop = document.body.scrollTop || (document.documentElement && document.documentElement.scrollTop) || 0;
             this.fixateView(prevView);
             prevView.element.scrollLeft = bodyScrollLeft;
             prevView.element.scrollTop = bodyScrollTop;
             // collect all callback functions, i.e. also those that have been registered using wildcards
             var callbacks = new Array();
             function collectTransitionCallbacks(transitionId) {
-                if (service.transitionCallbacks.has(transitionId)) {
-                    callbacks = callbacks.concat(service.transitionCallbacks.get(transitionId));
+                if (service.transitionCallbacks.hasOwnProperty(transitionId)) {
+                    callbacks = callbacks.concat(service.transitionCallbacks[transitionId]);
                 }
             }
             if (replace === false) {
@@ -214,4 +242,6 @@
 
     exports.OffCanvasService = OffCanvasService;
 
-}((this.OffCanvas = this.OffCanvas || {})));
+    return exports;
+
+}({}));
