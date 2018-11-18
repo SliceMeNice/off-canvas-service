@@ -42,8 +42,8 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 
 		// After fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
 		// this position, when the view will be re-activated.
-		var bodyScrollLeft = document.body.scrollLeft || document.documentElement.scrollLeft;
-		var bodyScrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+		var bodyScrollLeft = document.body.scrollLeft || (document.documentElement && document.documentElement.scrollLeft) || 0;
+		var bodyScrollTop = document.body.scrollTop || (document.documentElement && document.documentElement.scrollTop) || 0;
 
 		this.fixateView( prevView );
 
@@ -51,11 +51,11 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 		prevView.element.scrollTop = bodyScrollTop;
 
 		// collect all callback functions, i.e. also those that have been registered using wildcards
-		var callbacks = new Array<{ transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } }>();
+		var callbacks = new Array<{ transitionCallback: { ( prevView: OffCanvasView, nextView: OffCanvasView ): Promise<void> }, skipOrCleanupCallback?: { ( prevView: OffCanvasView, nextView: OffCanvasView ): void } }>();
 
 		function collectTransitionCallbacks( transitionId: string ) {
-			if ( service.transitionCallbacks.has( transitionId ) ) {
-				callbacks = callbacks.concat( service.transitionCallbacks.get( transitionId ) );
+			if ( service.transitionCallbacks.hasOwnProperty( transitionId ) ) {
+				callbacks = callbacks.concat( service.transitionCallbacks[ transitionId ] );
 			}
 		}
 
@@ -78,7 +78,7 @@ export class OffCanvasService extends AbstractOffCanvasService implements IOffCa
 				collectTransitionCallbacks( '*-' + nextView.id );
 			}
 		}
-		
+
 
 		const callbackArguments = [ prevView, nextView ];
 
