@@ -8,6 +8,11 @@
 
 ## Release History
 
+__3.0.0__
+
+  * Updated codebase to support ES5 and ES Module builds.
+  * Removed dependency to ES6 Map, so you might only need a polyfill for "Promise".
+
 __2.6.3__
 
   * Just another version bump.

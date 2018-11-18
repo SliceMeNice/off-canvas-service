@@ -1,3 +1,1 @@
-export {
-	OffCanvasService
-} from './offCanvasService';
+export { OffCanvasService, OffCanvasView } from './offCanvasService';

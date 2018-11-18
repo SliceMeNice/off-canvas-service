@@ -5,8 +5,5 @@ bower_components
 node_modules
 npm-debug.log
 
+.rpt2_cache
 /dist/
-/sources/**/*.js
-/sources/**/*.js.map
-/sources/index.d.ts
-/typings/
