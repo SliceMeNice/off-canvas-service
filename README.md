@@ -8,6 +8,10 @@
 
 ## Release History
 
+__3.1.0__
+
+  * Before fixating a view, we need to save the scrollLeft and scrollTop values of all scrolled elements inside of this view (not just the body), as the scroll position will be reset during fixating the view. After fixating the view, we can then restore the scroll positions.
+
 __3.0.0__
 
   * Updated codebase to support ES5 and ES Module builds.
