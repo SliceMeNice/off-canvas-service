@@ -159,13 +159,30 @@ var OffCanvasService = /** @class */ (function (_super) {
         // Also, reset the scrollTop of the next view to 0.
         var nextViewScrollLeft = nextView.element.scrollLeft;
         var nextViewScrollTop = nextView.element.scrollTop;
-        // After fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
+        // Before fixating the previous view, we need to store its scrollTop position, so that we can later jump back to
         // this position, when the view will be re-activated.
         var bodyScrollLeft = document.body.scrollLeft || (document.documentElement && document.documentElement.scrollLeft) || 0;
         var bodyScrollTop = document.body.scrollTop || (document.documentElement && document.documentElement.scrollTop) || 0;
+        // This also applies to all sub-elements that have been scrolled
+        var scrollingInfo = [];
+        var subElements = prevView.element.querySelectorAll('*');
+        for (var i = 0, max = subElements.length; i < max; i++) {
+            var element = subElements[i];
+            if (element.scrollLeft || element.scrollTop) {
+                scrollingInfo.push({
+                    element: element,
+                    scrollLeft: element.scrollLeft,
+                    scrollTop: element.scrollTop
+                });
+            }
+        }
         this.fixateView(prevView);
         prevView.element.scrollLeft = bodyScrollLeft;
         prevView.element.scrollTop = bodyScrollTop;
+        scrollingInfo.forEach(function (scrollInfo) {
+            scrollInfo.element.scrollLeft = scrollInfo.scrollLeft;
+            scrollInfo.element.scrollTop = scrollInfo.scrollTop;
+        });
         // collect all callback functions, i.e. also those that have been registered using wildcards
         var callbacks = new Array();
         function collectTransitionCallbacks(transitionId) {
